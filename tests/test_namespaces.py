@@ -512,3 +512,87 @@ class TestEnabledToolGate:
 
     def test_shows_when_enabled_unknown_fail_open(self):
         assert "SECTION" in self._render()
+
+
+# ── SystemNamespace platform block ─────────────────────────────────────────────
+
+
+@pytest.mark.unit
+class TestSystemNamespacePlatform:
+    PRESETS = [
+        "chat_combine_default.txt",
+        "chat_combine_creative.txt",
+        "chat_combine_strict.txt",
+        "agentic/default.txt",
+        "agentic/creative.txt",
+        "agentic/strict.txt",
+    ]
+
+    def test_platform_block_uses_public_base_url(self):
+        from application.core.settings import settings
+
+        with (
+            patch.object(settings, "PUBLIC_API_BASE_URL", "https://api.example.com/"),
+            patch.object(settings, "API_URL", "http://internal:7091"),
+        ):
+            result = SystemNamespace().build()
+        assert "https://api.example.com/v1/chat/completions" in result["platform"]
+        assert "https://api.example.com/mcp" in result["platform"]
+        assert "internal:7091" not in result["platform"]
+        assert "example.com//" not in result["platform"]
+        assert result["api_base_url"] == "https://api.example.com"
+
+    def test_platform_block_relative_when_public_base_url_unset(self):
+        # API_URL must never leak into prompts — stock compose points it at
+        # an internal hostname.
+        from application.core.settings import settings
+
+        with (
+            patch.object(settings, "PUBLIC_API_BASE_URL", None),
+            patch.object(settings, "API_URL", "http://backend:7091"),
+        ):
+            result = SystemNamespace().build()
+        assert "`POST /v1/chat/completions`" in result["platform"]
+        assert "backend:7091" not in result["platform"]
+        assert "https://docs.docsgpt.cloud" in result["platform"]
+        assert "None" not in result["platform"]
+        assert result["api_base_url"] is None
+
+    def test_api_base_url_survives_platform_render_failure(self):
+        from application.core.settings import settings
+        from application.templates.template_engine import TemplateEngine
+
+        with (
+            patch.object(settings, "PUBLIC_API_BASE_URL", "https://api.example.com"),
+            patch.object(TemplateEngine, "render", side_effect=RuntimeError("boom")),
+        ):
+            result = SystemNamespace().build()
+        assert result["platform"] == ""
+        assert result["api_base_url"] == "https://api.example.com"
+
+    def test_presets_render_platform_section(self):
+        from pathlib import Path
+
+        from application.templates.template_engine import TemplateEngine
+
+        prompts_dir = Path(__file__).resolve().parents[1] / "application" / "prompts"
+        engine = TemplateEngine()
+        context = NamespaceManager().build_context()
+        for preset in self.PRESETS:
+            rendered = engine.render((prompts_dir / preset).read_text(), context)
+            assert "## The DocsGPT platform" in rendered, preset
+            assert "https://docs.docsgpt.cloud" in rendered, preset
+
+    def test_presets_omit_section_when_platform_empty(self):
+        from pathlib import Path
+
+        from application.templates.template_engine import TemplateEngine
+
+        prompts_dir = Path(__file__).resolve().parents[1] / "application" / "prompts"
+        engine = TemplateEngine()
+        context = NamespaceManager().build_context()
+        context["system"]["platform"] = ""
+        rendered = engine.render(
+            (prompts_dir / "chat_combine_default.txt").read_text(), context
+        )
+        assert "The DocsGPT platform" not in rendered

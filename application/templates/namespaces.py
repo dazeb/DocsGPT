@@ -3,9 +3,15 @@ import re
 import uuid
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from pathlib import Path
+from typing import Any, Dict, Optional, Tuple
 
 logger = logging.getLogger(__name__)
+
+_PLATFORM_PARTIAL_PATH = (
+    Path(__file__).resolve().parents[1] / "prompts" / "partials" / "platform_capabilities.txt"
+)
+_platform_partial_content: Optional[str] = None
 
 
 class NamespaceBuilder(ABC):
@@ -44,6 +50,7 @@ class SystemNamespace(NamespaceBuilder):
             Dictionary with system variables
         """
         now = datetime.now(timezone.utc)
+        api_base_url, platform = self._platform_info()
 
         return {
             "date": now.strftime("%Y-%m-%d"),
@@ -51,7 +58,46 @@ class SystemNamespace(NamespaceBuilder):
             "timestamp": now.isoformat(),
             "request_id": request_id or str(uuid.uuid4()),
             "user_id": user_id,
+            "api_base_url": api_base_url,
+            "platform": platform,
         }
+
+    @staticmethod
+    def _platform_info() -> Tuple[Optional[str], str]:
+        """Return (public API base URL, rendered platform-capabilities block).
+
+        The block is rendered from ``prompts/partials/platform_capabilities.txt``
+        so the preset prompts can reference a single source via
+        ``{{ system.platform }}``; failures degrade to an empty block rather
+        than breaking prompt rendering.
+
+        Concrete endpoint URLs are emitted only when ``PUBLIC_API_BASE_URL``
+        is set. ``API_URL`` is deliberately not a fallback: stock compose
+        deployments point it at an internal hostname (http://backend:7091)
+        that would otherwise be advertised to end users.
+        """
+        from application.core.settings import settings
+        from application.templates.template_engine import TemplateEngine
+
+        global _platform_partial_content
+        base = settings.PUBLIC_API_BASE_URL
+        api_base_url = (
+            (base.strip().rstrip("/") or None)
+            if isinstance(base, str) and base.strip()
+            else None
+        )
+        try:
+            if _platform_partial_content is None:
+                _platform_partial_content = _PLATFORM_PARTIAL_PATH.read_text(encoding="utf-8")
+            platform = TemplateEngine().render(
+                _platform_partial_content, {"api_base_url": api_base_url}
+            ).strip()
+        except Exception as e:
+            logger.warning(
+                f"Failed to build platform capabilities block: {e}", exc_info=True
+            )
+            platform = ""
+        return api_base_url, platform
 
 
 class PassthroughNamespace(NamespaceBuilder):
