@@ -1408,26 +1408,7 @@ class LLMHandler(ABC):
         if finish_reason != "tool_calls":
             # Silent-loss recovery: the stream ended cleanly (finish=stop
             # or plain exhaustion) but never yielded a visible answer,
-            # and the model actually did work (thoughts non-empty). One
-            # plain re-send is far cheaper than a message row saved as
-            # status=complete with response="". Deliberately preserves
-            # the model's natural output distribution — no system-message
-            # nudge — since a "produce answer now, no thinking"
-            # instruction measurably shortens the model's reasoning by
-            # ~30% in our A/B, which hurts answer quality more than the
-            # tail failure rate justifies. Bounded to one attempt per
-            # stream by ``_answer_recovered`` so a recovery that itself
-            # reasons-only-stops does not recurse. Skipped when there is
-            # nothing to recover from (no reasoning) since the model
-            # genuinely chose to say nothing.
-            #
-            # Skipped, too, when the agent is running with structured
-            # output (json_schema / json_object). The primary call was
-            # constructed with response_format / response_schema that
-            # this handler cannot safely rebuild here without duplicating
-            # ``BaseAgent._llm_gen``; an unconstrained rescue would
-            # produce non-schema output that downstream consumers reject,
-            # which is worse than the empty-answer failure.
+            # and the model actually did work (thoughts non-empty).
             structured_output = (
                 getattr(agent, "json_schema", None)
                 or getattr(agent, "json_object", False)
