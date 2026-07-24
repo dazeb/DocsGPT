@@ -76,28 +76,28 @@ class SystemNamespace(NamespaceBuilder):
         deployments point it at an internal hostname (http://backend:7091)
         that would otherwise be advertised to end users.
         """
-        global _platform_partial_content
-        try:
-            from application.core.settings import settings
-            from application.templates.template_engine import TemplateEngine
+        from application.core.settings import settings
+        from application.templates.template_engine import TemplateEngine
 
-            base = settings.PUBLIC_API_BASE_URL
-            api_base_url = (
-                (base.strip().rstrip("/") or None)
-                if isinstance(base, str) and base.strip()
-                else None
-            )
+        global _platform_partial_content
+        base = settings.PUBLIC_API_BASE_URL
+        api_base_url = (
+            (base.strip().rstrip("/") or None)
+            if isinstance(base, str) and base.strip()
+            else None
+        )
+        try:
             if _platform_partial_content is None:
                 _platform_partial_content = _PLATFORM_PARTIAL_PATH.read_text(encoding="utf-8")
             platform = TemplateEngine().render(
                 _platform_partial_content, {"api_base_url": api_base_url}
             ).strip()
-            return api_base_url, platform
         except Exception as e:
             logger.warning(
                 f"Failed to build platform capabilities block: {e}", exc_info=True
             )
-            return None, ""
+            platform = ""
+        return api_base_url, platform
 
 
 class PassthroughNamespace(NamespaceBuilder):

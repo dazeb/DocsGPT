@@ -558,6 +558,18 @@ class TestSystemNamespacePlatform:
         assert "None" not in result["platform"]
         assert result["api_base_url"] is None
 
+    def test_api_base_url_survives_platform_render_failure(self):
+        from application.core.settings import settings
+        from application.templates.template_engine import TemplateEngine
+
+        with (
+            patch.object(settings, "PUBLIC_API_BASE_URL", "https://api.example.com"),
+            patch.object(TemplateEngine, "render", side_effect=RuntimeError("boom")),
+        ):
+            result = SystemNamespace().build()
+        assert result["platform"] == ""
+        assert result["api_base_url"] == "https://api.example.com"
+
     def test_presets_render_platform_section(self):
         from pathlib import Path
 
