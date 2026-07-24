@@ -88,13 +88,15 @@ class SystemNamespace(NamespaceBuilder):
                 else None
             )
             if _platform_partial_content is None:
-                _platform_partial_content = _PLATFORM_PARTIAL_PATH.read_text()
+                _platform_partial_content = _PLATFORM_PARTIAL_PATH.read_text(encoding="utf-8")
             platform = TemplateEngine().render(
                 _platform_partial_content, {"api_base_url": api_base_url}
             ).strip()
             return api_base_url, platform
         except Exception as e:
-            logger.warning(f"Failed to build platform capabilities block: {e}")
+            logger.warning(
+                f"Failed to build platform capabilities block: {e}", exc_info=True
+            )
             return None, ""
 
 
