@@ -87,6 +87,15 @@ export default function MobileTopBar({
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [deleteModalState, setDeleteModalState] =
     useState<ActiveState>('INACTIVE');
+  // A rename, share or delete belongs to the chat it started on. The bar
+  // stays mounted across chats, so drop any that is open when the chat changes.
+  const [actionsFor, setActionsFor] = useState(conversationId);
+  if (actionsFor !== conversationId) {
+    setActionsFor(conversationId);
+    setIsEditing(false);
+    setIsShareOpen(false);
+    setDeleteModalState('INACTIVE');
+  }
 
   const actions: TitleAction[] = [];
   if (editAgentPath) {
@@ -176,8 +185,8 @@ export default function MobileTopBar({
         </div>
       );
     }
-    if (!title) return null;
     if (actions.length === 0) {
+      if (!title) return null;
       return (
         <span
           data-testid="mobile-title"
@@ -203,8 +212,8 @@ export default function MobileTopBar({
             className="min-w-0 shrink"
           >
             {agentMark}
-            <span className="truncate" title={title}>
-              {title}
+            <span className="truncate" title={title || undefined}>
+              {title || t('newChat')}
             </span>
             <ChevronDown className="text-muted-foreground" aria-hidden />
           </Button>

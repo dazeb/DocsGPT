@@ -179,4 +179,54 @@ describe('MobileTopBar', () => {
     expect(menuItem('navigation.editAgent')).toBeDefined();
     expect(menuItem('convTile.share')).toBeUndefined();
   });
+
+  it('keeps the menu on a chat or owned agent with an empty name', () => {
+    render({
+      title: '',
+      conversationId: 'c1',
+      editAgentPath: '/agents/edit/a1',
+      onRename: () => {},
+      onDelete: () => {},
+    });
+
+    const title = container.querySelector('[data-testid="mobile-title"]')!;
+    expect(title.tagName).toBe('BUTTON');
+    expect(title.textContent).toContain('newChat');
+    openMenu(title);
+    expect(menuItem('navigation.editAgent')).toBeDefined();
+    expect(menuItem('convTile.rename')).toBeDefined();
+  });
+
+  it('drops a rename in progress when the conversation changes', () => {
+    const onRename = vi.fn();
+    const props = { title: 'Router drops', onRename, onDelete: () => {} };
+    render({ ...props, conversationId: 'c1' });
+
+    openMenu(container.querySelector('[data-testid="mobile-title"]')!);
+    act(() => menuItem('convTile.rename')!.click());
+    expect(container.querySelector('input')).not.toBeNull();
+
+    render({ ...props, title: 'Other chat', conversationId: 'c2' });
+    expect(container.querySelector('input')).toBeNull();
+    expect(button('convTile.save')).toBeNull();
+    expect(onRename).not.toHaveBeenCalled();
+  });
+
+  it('closes an open share when the conversation changes', () => {
+    const props = {
+      title: 'Router drops',
+      onRename: () => {},
+      onDelete: () => {},
+    };
+    render({ ...props, conversationId: 'c1' });
+
+    openMenu(container.querySelector('[data-testid="mobile-title"]')!);
+    act(() => menuItem('convTile.share')!.click());
+    expect(
+      document.querySelector('[data-testid="share-modal"]'),
+    ).not.toBeNull();
+
+    render({ ...props, conversationId: 'c2' });
+    expect(document.querySelector('[data-testid="share-modal"]')).toBeNull();
+  });
 });
