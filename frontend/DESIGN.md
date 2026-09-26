@@ -317,6 +317,9 @@ with `className="flex-row items-start gap-2"` and the `CopyButton` inside.
 Inside an Alert or a trace's tool panel, and in a full-pane viewer, the
 `<pre>` takes the recipe with no Card, so boxes don't nest. Put scroll caps
 (`max-h-* overflow-y-auto`) on the Card; never `break-all`.
+This recipe is for app output. A fenced code block in a markdown answer is
+source code: it keeps its lines (`white-space: pre`, indentation intact) and
+scrolls sideways inside its own bordered frame (see Chat answer column).
 
 Tile text: the name is `CardTitle` (14px semibold from Card's `text-sm`; pass
 `as="h2"` on a page that goes from its title straight to a tile grid, but
@@ -764,6 +767,18 @@ in the `truncate` span; its icons stay `shrink-0`.
 New Chat is `SquarePen` everywhere: the phone bar, the sidebar's New Chat row
 and the collapsed rail. `Plus` means "add an item to this list", not "start
 a chat".
+
+### Chat answer column
+
+The answer column never scrolls sideways. Its boxes, from AnswerFlow down to
+MarkdownAnswer, are stretched full width (`w-full min-w-0`, or the flex
+default), never `items-start` / `self-start` with `max-w-full`: a
+shrink-to-fit box sizes to its longest code line, and `max-w-full` caps it at
+100% before its margins are added, so it still spills past a phone screen.
+Wide markdown blocks scroll inside their own frame, not the page: fenced code
+scrolls sideways in its bordered box with the language and copy row fixed
+above it, and tables do the same (`overflow-x-auto` on their bordered
+wrapper).
 
 ### Grids
 
