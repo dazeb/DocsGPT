@@ -42,8 +42,10 @@ const buttonVariants = cva(
         // variant below sets the row's own padding and radius.
         'sidebar-item':
           'text-foreground hover:bg-sidebar-accent aria-[current=page]:bg-sidebar-accent',
+        // A field, so it gives way in a row like Input and SelectTrigger do
+        // (the base is shrink-0), keeping a neighbour's edit button in view.
         combobox:
-          'border border-input bg-card font-normal shadow-xs hover:bg-accent data-placeholder:text-muted-foreground',
+          'min-w-0 shrink border border-input bg-card font-normal shadow-xs hover:bg-accent data-placeholder:text-muted-foreground',
         // Underline tabs (FilePicker's drives, the agent page sub-nav). Mark the
         // current tab with data-active; the 2px border is always there so the
         // row height doesn't move. The compound variant squares the corners.

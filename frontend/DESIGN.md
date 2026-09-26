@@ -761,8 +761,12 @@ chevron keep their size, and only the name gives way (a `truncate` span with
 `title=` holding the full name). This is the rule for any Button that holds a
 user-supplied name (a chat, agent or source) in a flex row: Button's base is
 `shrink-0 whitespace-nowrap`, so `min-w-0` alone does nothing. Pass `min-w-0
-shrink` (or `flex-1` / `w-full` when it should fill the row) and put the name
-in the `truncate` span; its icons stay `shrink-0`.
+shrink` (or `flex-1` when it should fill the row) and put the name in the
+`truncate` span; its icons stay `shrink-0`. `w-full` doesn't count: a
+`w-full shrink-0` Button takes the whole row and pushes its neighbour out,
+under the next control (an `outline` Button's fill is translucent in dark, so
+it shows through there and hides in light). `variant="combobox"` already
+carries `min-w-0 shrink`, like the fields it sits among.
 
 New Chat is `SquarePen` everywhere: the phone bar, the sidebar's New Chat row
 and the collapsed rail. `Plus` means "add an item to this list", not "start
