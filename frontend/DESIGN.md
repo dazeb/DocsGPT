@@ -182,6 +182,10 @@ Patterns:
   link.
 - Icon-only buttons are `IconButton` (below), never a `Button` with a
   `title`.
+- An action whose label doesn't fit beside a name on a phone (the shared
+  agent card's Edit, in a long locale) is two elements: an `IconButton`
+  with `sm:hidden` and the labelled `Button` with `hidden sm:inline-flex`.
+  Never hide a Button's label span, which leaves an icon-only Button.
 - Roles for dangerous and dismissive actions: a delete on a page (a "Danger
   zone" card's Delete agent or Revoke, Delete all) is `destructive-outline`;
   the submit of a confirm dialog is `destructive` (`ModalActions destructive`,
@@ -294,6 +298,8 @@ tone="destructive"`. Muted text fails AA on the red fill, so the tone turns
   ghost's grey square would not.
 - A card on the page background that must not look raised (the shared
   agent card) is `subtle lg`. Cards never take a shadow.
+- The shared agent card's description is `line-clamp-3` with no inner
+  scroller (`max-h-* overflow-y-auto`) and no hover hint for the cut text.
 
 Stat tiles are `components/StatCard.tsx`, never a hand-rolled Card: `label`,
 `value` (24px bold `tabular-nums`), `sub` (a 12px muted line or link),
@@ -965,6 +971,13 @@ leading-tight font-semibold`. `DialogTitle` and `SheetTitle` default to it;
   or output) stays proportional at the same size; only what the app
   serialised (arguments, results, attributes) is mono. Every stat figure is
   `tabular-nums`.
+- **Wrapping**: prose that can run long (a name, a description) wraps with
+  `wrap-break-word` in a column that can shrink (`min-w-0` in a flex row).
+  A single long token (a URL, a key, an id, an email, a filename, a command)
+  is `wrap-anywhere`, which also lets a table cell or flex item shrink below
+  the token instead of widening the table. Both break at spaces first and
+  split a token only when it would overflow. Never `break-all`: it splits
+  ordinary words mid-word ("notif / ications").
 
 ### Rhythm
 

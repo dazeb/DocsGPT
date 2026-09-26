@@ -135,7 +135,7 @@ function DownloadCard({
       <div className="border-border flex flex-col items-center gap-3 rounded-xl border p-8 text-center">
         <FileText className="text-muted-foreground size-12" />
         <div>
-          <p className="text-foreground text-sm font-medium break-all">
+          <p className="text-foreground text-sm font-medium wrap-anywhere">
             {filename}
           </p>
           {size != null && (

@@ -387,7 +387,7 @@ export default function RemoteDeviceConfig({ tool, handleGoBack }: Props) {
                         key={entry.id}
                         className="bg-muted flex flex-col gap-1 rounded-md px-3 py-2 text-xs"
                       >
-                        <code className="text-foreground block font-mono break-all whitespace-pre-wrap">
+                        <code className="text-foreground block font-mono wrap-anywhere whitespace-pre-wrap">
                           {entry.command}
                         </code>
                         <div className="text-muted-foreground flex flex-wrap gap-3">
