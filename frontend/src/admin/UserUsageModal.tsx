@@ -78,7 +78,7 @@ function SplitTable({
             <TableBody>
               {rows.map((row) => (
                 <TableRow key={row.key}>
-                  <TableCell className="text-xs break-all">
+                  <TableCell className="text-xs wrap-anywhere">
                     {labels?.[row.key] ?? row.key}
                   </TableCell>
                   <TableCell align="right" className="tabular-nums">

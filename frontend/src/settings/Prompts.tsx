@@ -286,7 +286,7 @@ export default function Prompts({
           aria-label={titleAs === 'heading' ? titleText : undefined}
           data-placeholder={selectedPrompt?.name ? undefined : ''}
           className={cn(
-            'w-full min-w-0 justify-between',
+            'w-full justify-between',
             titleAs === 'row' && 'sm:w-56',
           )}
         >

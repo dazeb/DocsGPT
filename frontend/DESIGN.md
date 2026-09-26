@@ -182,6 +182,10 @@ Patterns:
   link.
 - Icon-only buttons are `IconButton` (below), never a `Button` with a
   `title`.
+- An action whose label doesn't fit beside a name on a phone (the shared
+  agent card's Edit, in a long locale) is two elements: an `IconButton`
+  with `sm:hidden` and the labelled `Button` with `hidden sm:inline-flex`.
+  Never hide a Button's label span, which leaves an icon-only Button.
 - Roles for dangerous and dismissive actions: a delete on a page (a "Danger
   zone" card's Delete agent or Revoke, Delete all) is `destructive-outline`;
   the submit of a confirm dialog is `destructive` (`ModalActions destructive`,
@@ -294,6 +298,8 @@ tone="destructive"`. Muted text fails AA on the red fill, so the tone turns
   ghost's grey square would not.
 - A card on the page background that must not look raised (the shared
   agent card) is `subtle lg`. Cards never take a shadow.
+- The shared agent card's description is `line-clamp-3` with no inner
+  scroller (`max-h-* overflow-y-auto`) and no hover hint for the cut text.
 
 Stat tiles are `components/StatCard.tsx`, never a hand-rolled Card: `label`,
 `value` (24px bold `tabular-nums`), `sub` (a 12px muted line or link),
@@ -311,6 +317,9 @@ with `className="flex-row items-start gap-2"` and the `CopyButton` inside.
 Inside an Alert or a trace's tool panel, and in a full-pane viewer, the
 `<pre>` takes the recipe with no Card, so boxes don't nest. Put scroll caps
 (`max-h-* overflow-y-auto`) on the Card; never `break-all`.
+This recipe is for app output. A fenced code block in a markdown answer is
+source code: it keeps its lines (`white-space: pre`, indentation intact) and
+scrolls sideways inside its own bordered frame (see Chat answer column).
 
 Tile text: the name is `CardTitle` (14px semibold from Card's `text-sm`; pass
 `as="h2"` on a page that goes from its title straight to a tile grid, but
@@ -727,6 +736,54 @@ shape="pill"`), then `divider` (a `Separator`). A page search is
 `label`. The chunk viewer's and file tree's searches stay `CommandInput` in
 their frame, because their results are `CommandItem`s.
 
+### App chrome: the phone top bar and New Chat
+
+Below `lg` the top of every page is `navigation/MobileTopBar` (56px, `h-14`):
+the sidebar toggle (`PanelLeft`), a title, then New Chat and the account
+avatar (`ProfileButton size="xs"`). It is on `bg-background` like the page,
+with no border and no shadow; a `from-background to-transparent` gradient under
+it lets the content fade out as it scrolls. At `lg` and up, `ActionButtons`
+holds Share and the avatar in the top-right corner instead, and it renders
+nothing on a phone.
+
+The title is for chats only: the open conversation's name, or the agent's
+name on a new agent chat, with the agent's `Avatar` in front. A plain new chat
+has no title. So do section pages (settings, admin, an agent's pages), because
+`SectionShell` already draws their title. When the chat has actions, the title
+is a `ghost sm` Button that opens a `DropdownMenu` with Edit agent (owned
+agents), Share, Rename and Delete. Rename edits the name in place, as the
+sidebar row does. A title with no actions (a shared agent's new chat) is
+plain text.
+
+A long title truncates to one line and never runs under New Chat or the
+avatar: the title slot is `flex min-w-0 flex-1`, the agent's `Avatar` and the
+chevron keep their size, and only the name gives way (a `truncate` span with
+`title=` holding the full name). This is the rule for any Button that holds a
+user-supplied name (a chat, agent or source) in a flex row: Button's base is
+`shrink-0 whitespace-nowrap`, so `min-w-0` alone does nothing. Pass `min-w-0
+shrink` (or `flex-1` when it should fill the row) and put the name in the
+`truncate` span; its icons stay `shrink-0`. `w-full` doesn't count: a
+`w-full shrink-0` Button takes the whole row and pushes its neighbour out,
+under the next control (an `outline` Button's fill is translucent in dark, so
+it shows through there and hides in light). `variant="combobox"` already
+carries `min-w-0 shrink`, like the fields it sits among.
+
+New Chat is `SquarePen` everywhere: the phone bar, the sidebar's New Chat row
+and the collapsed rail. `Plus` means "add an item to this list", not "start
+a chat".
+
+### Chat answer column
+
+The answer column never scrolls sideways. Its boxes, from AnswerFlow down to
+MarkdownAnswer, are stretched full width (`w-full min-w-0`, or the flex
+default), never `items-start` / `self-start` with `max-w-full`: a
+shrink-to-fit box sizes to its longest code line, and `max-w-full` caps it at
+100% before its margins are added, so it still spills past a phone screen.
+Wide markdown blocks scroll inside their own frame, not the page: fenced code
+scrolls sideways in its bordered box with the language and copy row fixed
+above it, and tables do the same (`overflow-x-auto` on their bordered
+wrapper).
+
 ### Grids
 
 Two recipes, no component. Tiles (sources, tools, custom models, agents):
@@ -799,14 +856,18 @@ scroller) and the same blurred overlay. Modal, DialogContent and every Sheet sha
 dark:bg-black/50`).
 
 Every phone bottom sheet has one shape: `bg-card`, 16px top corners, no top
-border, at most 90% of the viewport, and bottom padding that clears the iPhone
-home indicator. `SheetContent side="bottom"` gives it with `pb-safe-0` (the
-bare inset); pass `handle` for the grab bar, which also hides the X (the handle and
-the overlay dismiss it; pass `showCloseButton` to keep one).
+border, `max-h-sheet` (the visible viewport less the top safe-area inset and a
+3rem strip, so the scrim above it can always be tapped to close), and bottom
+padding that clears the iPhone home indicator. Never cap a sheet with `vh` (see
+Viewport heights): a `90vh` sheet slides under Safari's URL bar and covers its
+scrim. `SheetContent side="bottom"` gives the
+shape with `pb-safe-0` (the bare inset); pass `handle` for the grab bar, which
+also hides the X (the overlay dismisses it; the handle is only a cue and doesn't
+drag; pass `showCloseButton` to keep an X).
 `Modal mobileVariant="sheet"` shares the shape and the `SheetHandle`, with
-`pb-safe` (the inset, at least 1rem) under its footer. `pb-safe` and
-`pb-safe-0` are the `index.css` utilities for `env(safe-area-inset-bottom)`;
-never spell `env()` in a class.
+`pb-safe` (the inset, at least 1rem) under its footer. `pb-safe`, `pb-safe-0`
+and `max-h-sheet` are the `index.css` utilities for the safe-area insets; never
+spell `env()` in a class.
 
 **Open question: side panel or right sheet for chat content.** Chat has two
 ways to show something beside an answer. Notes, todos and files open in
@@ -826,6 +887,13 @@ with `bg-accent`: cmdk's own `data-selected` highlight is `bg-accent` and
 follows the pointer and arrow keys, so an accent fill would look like hover.
 While a checked item is also highlighted it keeps its tint and text and gains
 a 1px inset `primary` ring, so the chosen row never turns plain grey.
+
+A picker's footer (`MultiSelectPopover footer`) links to the page that manages
+the list, as a `link inline` Button with a 12px `ArrowRight` (Go to Sources, Go
+to Tools). A shortcut action (Upload new, an `outline-primary pill`) sits at the
+right end of the same row: `flex flex-wrap items-center justify-between gap-3`,
+so on a narrow sheet or in a long locale it wraps under the link rather than
+taking a row of its own everywhere (`SourcesPopoverFooter`).
 
 ### ActionMenu (`ui/dropdown-menu.tsx`)
 
@@ -873,6 +941,28 @@ values (`h-[calc(100dvh-64px)]`, `max-w-[520px]`) and motion values
 padding, colours and radii in brackets are not; pick the nearest scale step
 or add a token.
 
+### Viewport heights
+
+Never size anything with `vh` or the `h-screen` family (`h-`, `min-h-`,
+`max-h-screen`, which are `100vh`). On iOS Safari `vh` is the viewport with the
+toolbars hidden, so while the URL bar and tab bar show, a `vh` height is about
+140px taller than the screen: a centred message sits low, a panel or dropdown
+runs under the tab bar, and the app shell can be dragged and bounce. ESLint
+(`no-restricted-syntax`) rejects both. Pick by what the height does:
+
+- **`dvh`** (the visible viewport, follows the toolbars): the app shell
+  (`h-dvh`), full-screen states (`min-h-dvh`: 404, MobileBlocker, the `screen`
+  `LoadingState`), and caps on things that pop up over the page (a search
+  dropdown's `max-h-[calc(100dvh-200px)]`, `Modal`'s `85dvh`).
+- **`svh`** (the smallest viewport, steady): a fixed-size panel inside a page
+  that scrolls (the Logs panel's `h-[55svh]`, a list's `max-h-[45svh]`, the
+  chunk editor's `min-h`), so it doesn't resize while Safari's bars slide in
+  and out.
+- **`max-h-sheet`**: every bottom sheet (see Modal, not Dialog).
+- A row or control has a fixed height (`h-12`), never a share of the viewport.
+
+`w-screen` is `vw`, which the toolbars don't change, so it stays allowed.
+
 ### Typography roles
 
 - **Page title**: `SectionPageHeader` (24px bold); the only other text at
@@ -900,6 +990,13 @@ leading-tight font-semibold`. `DialogTitle` and `SheetTitle` default to it;
   or output) stays proportional at the same size; only what the app
   serialised (arguments, results, attributes) is mono. Every stat figure is
   `tabular-nums`.
+- **Wrapping**: prose that can run long (a name, a description) wraps with
+  `wrap-break-word` in a column that can shrink (`min-w-0` in a flex row).
+  A single long token (a URL, a key, an id, an email, a filename, a command)
+  is `wrap-anywhere`, which also lets a table cell or flex item shrink below
+  the token instead of widening the table. Both break at spaces first and
+  split a token only when it would overflow. Never `break-all`: it splits
+  ordinary words mid-word ("notif / ications").
 
 ### Rhythm
 
@@ -982,7 +1079,9 @@ shadow-lg` in both themes: the knob is white on any track, and a white knob
   `z-20` in-page floating chrome (banners, scroll-to-bottom, drag
   handles); `z-50` overlays, modals, sheets and toasts; `z-200` every
   portalled floating list (popover, menu, select, tooltip), so it opens above
-  a Modal without an override. Do not invent values in between.
+  a Modal without an override. Do not invent values in between. The app
+  shell uses the low layers too: the phone top bar is `z-10`, and the
+  sidebar and its phone backdrop are `z-20`, so an open sidebar dims the bar.
 
 ## Inline styles
 

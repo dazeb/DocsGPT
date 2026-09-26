@@ -308,7 +308,7 @@ export default function Quotas() {
                 {userPolicies.map((policy) => (
                   <TableRow key={`${policy.subject_id}:${policy.bucket}`}>
                     <TableCell>
-                      <span className="mr-2 break-all">
+                      <span className="mr-2 wrap-anywhere">
                         {policy.subject_id}
                       </span>
                       {bucketPill(policy)}

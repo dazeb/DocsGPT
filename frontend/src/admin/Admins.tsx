@@ -81,7 +81,7 @@ export default function Admins() {
             <TableBody>
               {admins.map((a) => (
                 <TableRow key={a.user_id}>
-                  <TableCell className="font-medium break-all">
+                  <TableCell className="font-medium wrap-anywhere">
                     {a.user_id}
                   </TableCell>
                   <TableCell>

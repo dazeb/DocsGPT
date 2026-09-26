@@ -224,7 +224,7 @@ export default function Usage() {
               <TableBody>
                 {topUsers.map((user) => (
                   <TableRow key={user.user_id}>
-                    <TableCell className="font-mono text-xs break-all">
+                    <TableCell className="font-mono text-xs wrap-anywhere">
                       <Button
                         type="button"
                         variant="link"

@@ -33,11 +33,22 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
   // One placeholder beside the desktop shell, at most two below it.
   const skeletonCount = isDesktop ? 1 : Math.min(count, 2);
 
+  // The Spinner this replaces carried role="status"; without it a screen
+  // reader gets no signal at all while a section loads. Absolutely
+  // positioned by `sr-only`, so it never becomes a flex/grid item.
+  const status = (
+    <span className="sr-only" role="status">
+      {t('loading')}
+    </span>
+  );
+
+  // Rendered inside a <tbody>, so the status lives in the first cell.
   const renderTable = () => (
     <>
       {[...Array(4)].map((_, idx) => (
         <tr key={idx}>
           <td className="w-[40%] px-4 py-4">
+            {idx === 0 && status}
             <Skeleton className="h-4 w-full" />
           </td>
           <td className="w-[30%] px-4 py-4">
@@ -359,14 +370,11 @@ const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
 
   const render = componentMap[component] || componentMap.default;
 
-  // The Spinner this replaces carried role="status"; without it a screen
-  // reader gets no signal at all while a section loads. Absolutely
-  // positioned by `sr-only`, so it never becomes a flex/grid item.
+  if (component === 'fileTable') return render();
+
   return (
     <>
-      <span className="sr-only" role="status">
-        {t('loading')}
-      </span>
+      {status}
       {render()}
     </>
   );

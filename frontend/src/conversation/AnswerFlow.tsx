@@ -126,10 +126,13 @@ export default function AnswerFlow({
         );
       })}
       {message && (
-        <div className="flex max-w-full flex-col flex-wrap items-start self-start lg:flex-nowrap">
+        <div className="flex w-full min-w-0 flex-col">
           {/* ``ml-6`` is the answer's text column: step labels sit at the same
-              offset, with their icons in the gutter to its left. */}
-          <div className="animate-in fade-in slide-in-from-bottom-1.5 my-2 mr-5 ml-6 flex max-w-full flex-col duration-260 ease-out motion-reduce:animate-none">
+              offset, with their icons in the gutter to its left. Stretched,
+              not ``self-start max-w-full``: a shrink-to-fit box sizes to its
+              longest code line, and ``max-w-full`` caps it at 100% before the
+              margins land on top, so the chat scrolled sideways on a phone. */}
+          <div className="animate-in fade-in slide-in-from-bottom-1.5 my-2 mr-5 ml-6 flex min-w-0 flex-col duration-260 ease-out motion-reduce:animate-none">
             <MarkdownAnswer
               content={message}
               isStreaming={isStreaming}

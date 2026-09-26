@@ -6,6 +6,7 @@ import { Avatar } from '../components/ui/avatar';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
+import { IconButton } from '../components/ui/icon-button';
 import { formatDateTime } from '../utils/dateTimeUtils';
 import { getToolDisplayName } from '../utils/toolUtils';
 import { Agent } from './types';
@@ -40,27 +41,38 @@ export default function SharedAgentCard({
             imgClassName="size-full object-contain"
           />
         </div>
-        <div className="flex max-h-[92px] flex-1 flex-col gap-px">
-          <h2 className="text-foreground text-base font-semibold sm:text-lg">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <h2 className="text-foreground text-base leading-snug font-semibold wrap-break-word sm:text-lg">
             {agent.name}
           </h2>
-          <p className="text-muted-foreground overflow-y-auto text-xs text-wrap break-all sm:text-sm">
+          <p className="text-muted-foreground line-clamp-3 text-xs leading-relaxed wrap-break-word sm:text-sm">
             {agent.description}
           </p>
         </div>
         {onEdit && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            shape="pill"
-            onClick={onEdit}
-            className="shrink-0"
-            aria-label={t('agents.edit')}
-          >
-            <Pencil />
-            {t('agents.edit')}
-          </Button>
+          <>
+            {/* A phone has no room for a long localised label beside the name. */}
+            <IconButton
+              label={t('agents.edit')}
+              icon={Pencil}
+              variant="outline"
+              size="icon-sm"
+              shape="pill"
+              onClick={onEdit}
+              className="shrink-0 sm:hidden"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              shape="pill"
+              onClick={onEdit}
+              className="hidden shrink-0 sm:inline-flex"
+            >
+              <Pencil />
+              {t('agents.edit')}
+            </Button>
+          </>
         )}
       </div>
       {hasSharedMetadata && (
